@@ -38,6 +38,9 @@
     gravity: căn chỉnh text
     text: văn bản
     textColor : màu chữ
+
+    người thực hiện: Trần Hữu Thiện Tâm
+    thời gian: 28/3/2020
 -->
     <!--
     * Thuộc tính của button
@@ -50,6 +53,9 @@
     style : loại button
     layout_width : rộng
     layout_height : dài
+
+    người thực hiện: Nguyễn Văn Triều
+    thời gian: 28/3/2020
 -->
     <LinearLayout
 
