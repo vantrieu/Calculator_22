@@ -75,7 +75,7 @@
             android:fontFamily="sans-serif-thin"
 
             android:gravity="right|bottom"
-            android:text="123456"
+            android:text="0"
 
 
             android:textColor="#ffffff"
