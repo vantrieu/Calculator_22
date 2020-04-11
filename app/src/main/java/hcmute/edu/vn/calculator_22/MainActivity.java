@@ -11,19 +11,28 @@ public class MainActivity extends AppCompatActivity implements  View.OnClickList
     Button btn1, btn2, btn3, btn4, btn5, btn6, btn7, btn8, btn9, btn0, btnDevide, btnMulti, btnSub, btnSum, btnDot, btnDel, btnResult;
     TextView txtResult;
     int result;                         //kết quả cuối cùng
-    int temp;                               //biến lưu các giá trị tạm thời, khi nào người dùng click vào
-                                            // sự kiện tính toán thì đem ra tính toán với result
+    int temp;                           //lưu các giá trị tạm thời trên màn hình, khi nào người dùng click vào sự kiện tính toán thì đem ra tính toán với result
     String pheptinh;                    //lưu trữ phép tính dưới dạng chuỗi "cong" "tru" "nhan" "chia"
-    boolean isCalculating;                  //true : khi đang trong một chuỗi tính toán và vẫn có thể tiếp tục tính toán với kết quả vừa có.
-                                            //false: khi đã hoàn thành chuỗi tính toán, như là click vào dấu = hay clear
+    boolean isOperator;
+    /*  đánh dấu button vừa chọn là các toán tử +-x:
+        mục đích:   nếu trước đó đã chọn toán tử rồi thì khi chọn lại chỉ gán lại phép tính mà ko tính toán
+                    nếu trước đó là chuỗi tính toán chưa hoàn tất thì thực hiện tính xong mới gán*/
+    boolean isBegin;
+    /*  đánh dấu 2 trạng thái của chương trình
+        --false:    trạng thái ban đầu, chưa bắt đầu chuỗi tính toán mới, biến result chưa có giá trị,
+                    số mà người dùng nhập chỉ tạm thời xuất hiện trên màn hình và chưa xác định được phép tính
+        --true:     bắt đầu chuỗi tính toán mới, kích hoạt khi nhấn vào button toán tử +-x:
+                    khi này giá trị trên màn hình sẽ được lưu vào biến result, phép tính vừa chọn cũng được lưu
+                    biến temp được reset để người dùng nhập số tiếp theo (số này được lưu vào temp)*/
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         AnhXa();
-        result=0;
-        temp =0;
-        isCalculating=false;
+        temp=0;
+        isOperator =false;
+        isBegin=false;
+
         btn1.setOnClickListener(this);
         btn2.setOnClickListener(this);
         btn3.setOnClickListener(this);
@@ -41,7 +50,8 @@ public class MainActivity extends AppCompatActivity implements  View.OnClickList
         btnSub.setOnClickListener(this);
         btnSum.setOnClickListener(this);
         btnResult.setOnClickListener(this);
-        txtResult.setText(String.valueOf(result));          //ban đầu result mặc định = 0
+
+        txtResult.setText(String.valueOf(temp));
     }
 
     protected void AnhXa()      //hàm ánh xạ các view
@@ -154,93 +164,102 @@ public class MainActivity extends AppCompatActivity implements  View.OnClickList
                 actionOfOperators("cong");
                 break;
             }
-            case R.id.btnDot:
-
-                break;
-            case R.id.btnDel:
+            case R.id.btnDel:   //xoá màn hình reset về ban đầu
             {
                 result = 0;
-                temp =0;
-                txtResult.setText("0");
-                isCalculating=false;
-                return;
+                temp = 0;
+                txtResult.setText(String.valueOf(temp));
+                isOperator =false;
+                isBegin=false;
+                break;
             }
             case R.id.btnResult:
             {
-                if(isCalculating)
+                /*Xuất ra kết quả rồi reset
+                * lưu ý: nếu đang nhập dở dang một phép tính ví dụ: 1+2+ (trước đó là dấu + tức isOperator là true)thì khi nhấn = sẽ ko làm gì
+                * có thể nhập một số để tiếp tục tính, ví dụ nhập tiếp 3: 1+2+3 sau đó nhấn = kết quả sẽ là 6
+                * kiểm tra isBegin để xử lý trường hợp nhấn = liên tục, lỡ như phép tính trước đó là CHIA thì sẽ đem result=0 chia cho temp=0
+                */
+                if(!isOperator &&isBegin)
                 {
-                    thucHienTinhToan(pheptinh);
-                    isCalculating=false;
+                    showLenManHinh(thucHienTinhToan(pheptinh));
                     result = 0;
                     temp =0;
+                    isBegin=false;
                 }
             }
             default:break;
         }
     }
-
-    private void actionOfOperators(String pt)       //sự kiện của các button cộng trừ nhân chia
-    {                                               // truyền vào chuỗi ứng với phép tính
-        if(!isCalculating)
+    private void actionOfOperators(String pt)       //sự kiện của các button cộng trừ nhân chia, truyền vào chuỗi ứng với phép tính
+    {
+        /*
+        * Thực hiện tính toán: nếu trước đó là 1+2 thì nhấn + sẽ xuất ra 3 rồi gán phép tính mới
+        */
+        if(!isOperator)
         {
-            isCalculating=true;             //hiện tại không trong chuỗi tính toán thì chỉ gán phép tính
-            pheptinh=pt;
+            if(!isBegin)    //vì ban đầu biến result ko chúa giá trị và chưa xác định phép tính nên chỉ gán giá trị trên màn hình vào result
+            {
+                result=temp;
+            }
+            else    //khi result đã chứa giá trị và phép tính đã xác định thì thực hiện tính toán giữa result và temp
+            {
+                showLenManHinh(thucHienTinhToan(pheptinh));
+            }
+            isOperator =true;
         }
-        else
-        {
-            thucHienTinhToan(pheptinh);     //ngược lại thì thực hiện tính xong rồi gán
-            pheptinh=pt;
-        }
+        /*
+        * Nếu đã chọn phép tính trước đó rồi thì chỉ gán lại thôi
+        */
+        temp=0;
+        pheptinh=pt;
+        isBegin=true;
     }
 
-    public void thucHienTinhToan(String pheptinh)   //xác nhận việc tính toán giữa result và giá trị temp. sau đó in ra
+    public String thucHienTinhToan(String pheptinh)   //trả về kết quả tính toán giữa result và giá trị temp
     {
         if(pheptinh.equals("cong"))
         {
             result+= temp;
-            showLenManHinh(result);
+            return String.valueOf(result);
         }
         else if(pheptinh.equals("tru"))
         {
             result-= temp;
-            showLenManHinh(result);
+            return String.valueOf(result);
         }
         else if(pheptinh.equals("nhan"))
         {
             result*= temp;
-            showLenManHinh(result);
+            return String.valueOf(result);
         }
-        else if(pheptinh.equals("chia"))
+        else
+        {
             if(temp !=0)
             {
                 result/= temp;
-                showLenManHinh(result);
+                return String.valueOf(result);
             }
             else
             {
-                txtResult.setText("ERROR");         //xử lý chia cho 0 -> lỗi -> reset lại từ đầu
-                result=0;
-                isCalculating=false;
+                isOperator =false;
+                isBegin=false;
+                return "ERROR";        //xử lý chia cho 0 -> lỗi -> reset lại từ đầu
             }
-        temp=0;                                     //tính toán xong thì reset temp về 0
+        }
     }
     public void showLenManHinh(int param)
     {
         txtResult.setText(String.valueOf(param));
     }
+    public void showLenManHinh(String param)
+    {
+        txtResult.setText(param);
+    }
     public void actionOfNumbers(int button)         //sự kiện của các button số 0-9, truyền vào số tương ứng
     {
-        if(isCalculating)
-        {
-            temp = temp*10+button;          //nếu đang trong một chuỗi tính toán, biến result để lưu
-                                            // giá trị trước đó nên ko thể dùng trực tiếp result để tránh mất dữ liệu
-            showLenManHinh(temp);           //vì vậy sử dụng biến temp để cộng dồn chuỗi số mà người dùng nhập
-        }
-        else
-        {
-            result=result*10+button;        //bắt đầu một chuỗi tính toán mới, result đóng vai trò là số đầu tiên
-            showLenManHinh(result);         //nếu dùng temp như trên, khi click vào +-x/ sau đó nhập số thì số vừa nhập sẽ đc lưu trên temp
-                                            //thì giá trị temp ban đầu sẽ bị thay đổi do đó tính toán sẽ trả về giá trị sai
-        }
+            temp = temp*10+button;
+            showLenManHinh(temp);
+            isOperator =false;
     }
 }
