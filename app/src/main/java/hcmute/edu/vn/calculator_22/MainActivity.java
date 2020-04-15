@@ -7,11 +7,17 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.text.NumberFormat;
+import java.util.Locale;
+
 public class MainActivity extends AppCompatActivity implements  View.OnClickListener{
     Button btn1, btn2, btn3, btn4, btn5, btn6, btn7, btn8, btn9, btn0, btnDevide, btnMulti, btnSub, btnSum, btnDot, btnDel, btnResult;
     TextView txtResult;
-    int result;                         //kết quả cuối cùng
-    int temp;                           //lưu các giá trị tạm thời trên màn hình, khi nào người dùng click vào sự kiện tính toán thì đem ra tính toán với result
+    double result;                         //kết quả cuối cùng
+    double temp;                           //lưu các giá trị tạm thời trên màn hình, khi nào người dùng click vào sự kiện tính toán thì đem ra tính toán với result
     String pheptinh;                    //lưu trữ phép tính dưới dạng chuỗi "cong" "tru" "nhan" "chia"
     boolean isOperator;
     /*  đánh dấu button vừa chọn là các toán tử +-x:
@@ -29,7 +35,7 @@ public class MainActivity extends AppCompatActivity implements  View.OnClickList
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         AnhXa();
-        temp=0;
+        temp=0d;
         isOperator =false;
         isBegin=false;
 
@@ -51,7 +57,7 @@ public class MainActivity extends AppCompatActivity implements  View.OnClickList
         btnSum.setOnClickListener(this);
         btnResult.setOnClickListener(this);
 
-        txtResult.setText(String.valueOf(temp));
+        showLenManHinh("0");
     }
 
     protected void AnhXa()      //hàm ánh xạ các view
@@ -166,9 +172,9 @@ public class MainActivity extends AppCompatActivity implements  View.OnClickList
             }
             case R.id.btnDel:   //xoá màn hình reset về ban đầu
             {
-                result = 0;
-                temp = 0;
-                txtResult.setText(String.valueOf(temp));
+                result = 0d;
+                temp = 0d;
+                showLenManHinh(temp);
                 isOperator =false;
                 isBegin=false;
                 break;
@@ -182,9 +188,9 @@ public class MainActivity extends AppCompatActivity implements  View.OnClickList
                 */
                 if(!isOperator &&isBegin)
                 {
-                    showLenManHinh(thucHienTinhToan(pheptinh));
-                    result = 0;
-                    temp =0;
+                    thucHienTinhToan(pheptinh);
+                    result = 0d;
+                    temp =0d;
                     isBegin=false;
                 }
             }
@@ -204,59 +210,63 @@ public class MainActivity extends AppCompatActivity implements  View.OnClickList
             }
             else    //khi result đã chứa giá trị và phép tính đã xác định thì thực hiện tính toán giữa result và temp
             {
-                showLenManHinh(thucHienTinhToan(pheptinh));
+                thucHienTinhToan(pheptinh);
             }
             isOperator =true;
         }
         /*
         * Nếu đã chọn phép tính trước đó rồi thì chỉ gán lại thôi
         */
-        temp=0;
+        temp=0d;
         pheptinh=pt;
         isBegin=true;
     }
 
-    public String thucHienTinhToan(String pheptinh)   //trả về kết quả tính toán giữa result và giá trị temp
+    public void thucHienTinhToan(String pheptinh)   //trả về kết quả tính toán giữa result và giá trị temp , show len man hinh
     {
         if(pheptinh.equals("cong"))
         {
             result+= temp;
-            return String.valueOf(result);
+            showLenManHinh(result);
         }
         else if(pheptinh.equals("tru"))
         {
             result-= temp;
-            return String.valueOf(result);
+            showLenManHinh(result);
         }
         else if(pheptinh.equals("nhan"))
         {
             result*= temp;
-            return String.valueOf(result);
+            showLenManHinh(result);
         }
         else
         {
             if(temp !=0)
             {
                 result/= temp;
-                return String.valueOf(result);
+                showLenManHinh(result);
             }
             else
             {
                 isOperator =false;
                 isBegin=false;
-                return "ERROR";        //xử lý chia cho 0 -> lỗi -> reset lại từ đầu
+                showLenManHinh("ERROR");        //xử lý chia cho 0 -> lỗi -> reset lại từ đầu
             }
         }
     }
-    public void showLenManHinh(int param)
+    public void showLenManHinh(double param)
     {
-        txtResult.setText(String.valueOf(param));
+        DecimalFormat df=new DecimalFormat("#.###", DecimalFormatSymbols.getInstance(Locale.ENGLISH));
+        df.setMaximumFractionDigits(3);
+        if((param-(int)param)==0)
+            txtResult.setText(String.valueOf((int)param));
+        else txtResult.setText(String.valueOf(df.format(param)));
     }
     public void showLenManHinh(String param)
     {
         txtResult.setText(param);
     }
-    public void actionOfNumbers(int button)         //sự kiện của các button số 0-9, truyền vào số tương ứng
+    public void actionOfNumbers(double button)         //sự kiện của các button số 0-9, truyền vào số tương ứng
     {
             temp = temp*10+button;
             showLenManHinh(temp);
