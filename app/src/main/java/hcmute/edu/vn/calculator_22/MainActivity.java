@@ -20,6 +20,7 @@ public class MainActivity extends AppCompatActivity implements  View.OnClickList
     double temp;                           //lưu các giá trị tạm thời trên màn hình, khi nào người dùng click vào sự kiện tính toán thì đem ra tính toán với result
     String pheptinh;                    //lưu trữ phép tính dưới dạng chuỗi "cong" "tru" "nhan" "chia"
     boolean isOperator;
+    boolean isDot;
     /*  đánh dấu button vừa chọn là các toán tử +-x:
         mục đích:   nếu trước đó đã chọn toán tử rồi thì khi chọn lại chỉ gán lại phép tính mà ko tính toán
                     nếu trước đó là chuỗi tính toán chưa hoàn tất thì thực hiện tính xong mới gán*/
@@ -38,7 +39,7 @@ public class MainActivity extends AppCompatActivity implements  View.OnClickList
         temp=0d;
         isOperator =false;
         isBegin=false;
-
+        isDot =false;
         btn1.setOnClickListener(this);
         btn2.setOnClickListener(this);
         btn3.setOnClickListener(this);
@@ -177,8 +178,15 @@ public class MainActivity extends AppCompatActivity implements  View.OnClickList
                 showLenManHinh(temp);
                 isOperator =false;
                 isBegin=false;
+                isDot=false;
                 break;
             }
+            case R.id.btnDot:
+            {
+                actionOfDot();
+                break;
+            }
+
             case R.id.btnResult:
             {
                 /*Xuất ra kết quả rồi reset
@@ -199,6 +207,8 @@ public class MainActivity extends AppCompatActivity implements  View.OnClickList
     }
     private void actionOfOperators(String pt)       //sự kiện của các button cộng trừ nhân chia, truyền vào chuỗi ứng với phép tính
     {
+        if(isDot)
+            return;
         /*
         * Thực hiện tính toán: nếu trước đó là 1+2 thì nhấn + sẽ xuất ra 3 rồi gán phép tính mới
         */
@@ -268,8 +278,24 @@ public class MainActivity extends AppCompatActivity implements  View.OnClickList
     }
     public void actionOfNumbers(double button)         //sự kiện của các button số 0-9, truyền vào số tương ứng
     {
-            temp = temp*10+button;
-            showLenManHinh(temp);
-            isOperator =false;
+            if(isDot)
+            {
+                temp = temp + 0.1*button;
+                showLenManHinh(temp);
+                isDot = false;
+            }
+            else {
+                temp = temp * 10 + button;
+                showLenManHinh(temp);
+                isOperator = false;
+            }
+    }
+    public void actionOfDot()
+    {
+        if(!isDot)
+        {
+            txtResult.setText( String.valueOf((int)temp) +".");
+            isDot = true;
+        }
     }
 }
