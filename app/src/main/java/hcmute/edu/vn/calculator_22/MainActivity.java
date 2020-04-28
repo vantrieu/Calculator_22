@@ -19,6 +19,7 @@ public class MainActivity extends AppCompatActivity implements  View.OnClickList
     double result;                         //kết quả cuối cùng
     double temp;                           //lưu các giá trị tạm thời trên màn hình, khi nào người dùng click vào sự kiện tính toán thì đem ra tính toán với result
     String pheptinh;                    //lưu trữ phép tính dưới dạng chuỗi "cong" "tru" "nhan" "chia"
+
     boolean isOperator;
     boolean isDot;
     /*  đánh dấu button vừa chọn là các toán tử +-x:
@@ -35,7 +36,9 @@ public class MainActivity extends AppCompatActivity implements  View.OnClickList
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
         AnhXa();
+
         temp=0d;
         isOperator =false;
         isBegin=false;
@@ -81,6 +84,7 @@ public class MainActivity extends AppCompatActivity implements  View.OnClickList
         btnSum = (Button) findViewById(R.id.btnSum);
         btnResult = (Button) findViewById(R.id.btnResult);
         txtResult = (TextView) findViewById(R.id.txtResult);
+
     }
     @Override
     public void onWindowFocusChanged(boolean hasFocus) {
@@ -208,7 +212,7 @@ public class MainActivity extends AppCompatActivity implements  View.OnClickList
     private void actionOfOperators(String pt)       //sự kiện của các button cộng trừ nhân chia, truyền vào chuỗi ứng với phép tính
     {
         if(isDot)
-            return;
+            isDot=false;
         /*
         * Thực hiện tính toán: nếu trước đó là 1+2 thì nhấn + sẽ xuất ra 3 rồi gán phép tính mới
         */
@@ -266,8 +270,8 @@ public class MainActivity extends AppCompatActivity implements  View.OnClickList
     }
     public void showLenManHinh(double param)
     {
-        DecimalFormat df=new DecimalFormat("#.###", DecimalFormatSymbols.getInstance(Locale.ENGLISH));
-        df.setMaximumFractionDigits(3);
+        DecimalFormat df=new DecimalFormat("#.#######", DecimalFormatSymbols.getInstance(Locale.ENGLISH));
+        df.setMaximumFractionDigits(7);
         if((param-(int)param)==0)
             txtResult.setText(String.valueOf((int)param));
         else txtResult.setText(String.valueOf(df.format(param)));
@@ -280,9 +284,12 @@ public class MainActivity extends AppCompatActivity implements  View.OnClickList
     {
             if(isDot)
             {
-                temp = temp + 0.1*button;
+                StringBuffer str = new StringBuffer();
+                str.append( txtResult.getText().toString());
+                str.append((int)button);
+                temp = Double.valueOf(str.toString());
                 showLenManHinh(temp);
-                isDot = false;
+
             }
             else {
                 temp = temp * 10 + button;
